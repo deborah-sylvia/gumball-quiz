@@ -1,0 +1,357 @@
+"use client"
+
+import { useState, useRef, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { RotateCcw, Download } from "lucide-react"
+
+interface Question {
+  id: number
+  question: string
+  answers: {
+    text: string
+    character: string
+    emoji: string
+  }[]
+}
+
+interface Character {
+  name: string
+  description: string
+  emoji: string
+  color: string
+  traits: string[]
+}
+
+const questions: Question[] = [
+  {
+    id: 1,
+    question: "What's your ideal way to spend a weekend?",
+    answers: [
+      { text: "Playing video games and eating snacks", character: "gumball", emoji: "🎮" },
+      { text: "Swimming or being near water", character: "darwin", emoji: "🏊" },
+      { text: "Reading books and studying", character: "anais", emoji: "📚" },
+      { text: "Working out and staying active", character: "nicole", emoji: "💪" },
+      { text: "Relaxing and watching TV", character: "richard", emoji: "📺" },
+    ],
+  },
+  {
+    id: 2,
+    question: "How do you handle problems?",
+    answers: [
+      { text: "Jump in headfirst without thinking", character: "gumball", emoji: "🚀" },
+      { text: "Try to help everyone get along", character: "darwin", emoji: "🤝" },
+      { text: "Analyze the situation carefully", character: "anais", emoji: "🔍" },
+      { text: "Take charge and fix it immediately", character: "nicole", emoji: "⚡" },
+      { text: "Hope someone else handles it", character: "richard", emoji: "🤷" },
+    ],
+  },
+  {
+    id: 3,
+    question: "What's your biggest strength?",
+    answers: [
+      { text: "My creativity and imagination", character: "gumball", emoji: "🎨" },
+      { text: "My loyalty and kindness", character: "darwin", emoji: "❤️" },
+      { text: "My intelligence and logic", character: "anais", emoji: "🧠" },
+      { text: "My determination and strength", character: "nicole", emoji: "🔥" },
+      { text: "My laid-back attitude", character: "richard", emoji: "😌" },
+    ],
+  },
+  {
+    id: 4,
+    question: "What's your favorite type of food?",
+    answers: [
+      { text: "Junk food and candy", character: "gumball", emoji: "🍭" },
+      { text: "Fish and seafood", character: "darwin", emoji: "🐟" },
+      { text: "Healthy, balanced meals", character: "anais", emoji: "🥗" },
+      { text: "Quick energy foods", character: "nicole", emoji: "⚡" },
+      { text: "Anything delicious and filling", character: "richard", emoji: "🍔" },
+    ],
+  },
+  {
+    id: 5,
+    question: "How do your friends see you?",
+    answers: [
+      { text: "The fun troublemaker", character: "gumball", emoji: "😈" },
+      { text: "The supportive best friend", character: "darwin", emoji: "🤗" },
+      { text: "The smart one with all the answers", character: "anais", emoji: "🤓" },
+      { text: "The responsible leader", character: "nicole", emoji: "👑" },
+      { text: "The easygoing comic relief", character: "richard", emoji: "😄" },
+    ],
+  },
+]
+
+const characters: Record<string, Character> = {
+  gumball: {
+    name: "Gumball Watterson",
+    description:
+      "You're creative, mischievous, and always ready for an adventure! Like Gumball, you have a wild imagination and aren't afraid to take risks, even if they sometimes get you into trouble.",
+    emoji: "🐱",
+    color: "bg-gradient-to-br from-blue-400 to-cyan-500",
+    traits: ["Creative", "Adventurous", "Optimistic", "Impulsive"],
+  },
+  darwin: {
+    name: "Darwin Watterson",
+    description:
+      "You're loyal, kind-hearted, and always there for your friends! Like Darwin, you believe in the good in everyone and try to keep the peace wherever you go.",
+    emoji: "🐠",
+    color: "bg-gradient-to-br from-orange-400 to-red-500",
+    traits: ["Loyal", "Kind", "Optimistic", "Supportive"],
+  },
+  anais: {
+    name: "Anais Watterson",
+    description:
+      "You're incredibly smart and mature beyond your years! Like Anais, you're the voice of reason and often have to clean up after others' mistakes.",
+    emoji: "🐰",
+    color: "bg-gradient-to-br from-pink-400 to-purple-500",
+    traits: ["Intelligent", "Mature", "Logical", "Responsible"],
+  },
+  nicole: {
+    name: "Nicole Watterson",
+    description:
+      "You're strong, determined, and fiercely protective of those you love! Like Nicole, you're not afraid to take charge and get things done.",
+    emoji: "🐱",
+    color: "bg-gradient-to-br from-blue-600 to-indigo-700",
+    traits: ["Strong", "Determined", "Protective", "Hardworking"],
+  },
+  richard: {
+    name: "Richard Watterson",
+    description:
+      "You're laid-back, fun-loving, and know how to enjoy life's simple pleasures! Like Richard, you bring joy and laughter wherever you go.",
+    emoji: "🐰",
+    color: "bg-gradient-to-br from-yellow-400 to-orange-500",
+    traits: ["Relaxed", "Fun-loving", "Cheerful", "Carefree"],
+  },
+}
+
+export default function Component() {
+  const [gameState, setGameState] = useState<"start" | "playing" | "result">("start")
+  const [currentQuestion, setCurrentQuestion] = useState(0)
+  const [answers, setAnswers] = useState<string[]>([])
+  const [result, setResult] = useState<string>("")
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  // Initialize audio elements
+  const clickSound = new Audio('/sounds/button-click.mp3')
+  const downloadSound = new Audio('/sounds/download.mp3')
+
+  useEffect(() => {
+    // Preload sounds
+    clickSound.preload = 'auto'
+    downloadSound.preload = 'auto'
+  }, [])
+
+  const calculateResult = (userAnswers: string[]) => {
+    const scores: Record<string, number> = {}
+
+    userAnswers.forEach((answer) => {
+      scores[answer] = (scores[answer] || 0) + 1
+    })
+
+    return Object.keys(scores).reduce((a, b) => (scores[a] > scores[b] ? a : b))
+  }
+
+  const handleAnswer = (character: string) => {
+    clickSound.play()
+    const newAnswers = [...answers, character]
+    setAnswers(newAnswers)
+
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1)
+    } else {
+      const finalResult = calculateResult(newAnswers)
+      setResult(finalResult)
+      setGameState("result")
+    }
+  }
+
+  const resetGame = () => {
+    setGameState("start")
+    setCurrentQuestion(0)
+    setAnswers([])
+    setResult("")
+  }
+
+  const progress = ((currentQuestion + 1) / questions.length) * 100
+
+  if (gameState === "start") {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden">
+          <CardContent className="p-0">
+            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-center">
+              <div className="text-6xl mb-4">🌟</div>
+              <h1 className="text-3xl font-black text-white mb-2 drop-shadow-lg">Amazing World of</h1>
+              <h2 className="text-4xl font-black text-white mb-4 drop-shadow-lg">GUMBALL</h2>
+              <p className="text-xl font-bold text-white/90 drop-shadow">Character Quiz!</p>
+            </div>
+            <div className="p-8 bg-white">
+              <p className="text-lg text-gray-700 mb-6 text-center font-medium">
+                Discover which character from Elmore you're most like! 🏠
+              </p>
+              <Button
+                onClick={() => {
+                  clickSound.play()
+                  setGameState("playing")
+                }}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+              >
+                Start Quiz! 🚀
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (gameState === "playing") {
+    const question = questions[currentQuestion]
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md mx-auto shadow-2xl border-0">
+          <CardContent className="p-6">
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-bold text-gray-600">
+                  Question {currentQuestion + 1} of {questions.length}
+                </span>
+                <span className="text-sm font-bold text-purple-600">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-3 bg-gray-200">
+                <div
+                  className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </Progress>
+            </div>
+
+            <div className="text-center mb-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight">{question.question}</h3>
+            </div>
+
+            <div className="space-y-3">
+              {question.answers.map((answer, index) => (
+                <Button
+                  key={index}
+                  onClick={() => handleAnswer(answer.character)}
+                  variant="outline"
+                  className="w-full p-4 text-left bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 border-2 border-gray-200 hover:border-purple-300 rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{answer.emoji}</span>
+                    <span className="font-medium text-gray-700 flex-1">{answer.text}</span>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (gameState === "result") {
+    const character = characters[result]
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden" ref={cardRef}>
+          <CardContent className="p-0">
+            <div className={`${character.color} p-8 text-center text-white`}>
+              <div className="text-8xl mb-4">{character.emoji}</div>
+              <h2 className="text-2xl font-black mb-2 drop-shadow-lg">You are...</h2>
+              <h1 className="text-3xl font-black mb-4 drop-shadow-lg">{character.name}!</h1>
+            </div>
+
+            <div className="p-8 bg-white">
+              <p className="text-gray-700 mb-6 leading-relaxed font-medium">{character.description}</p>
+
+              <div className="mb-6">
+                <h3 className="font-bold text-gray-800 mb-3">Your traits:</h3>
+                <div className="flex flex-wrap gap-2">
+                  {character.traits.map((trait, index) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 rounded-full text-sm font-medium border border-purple-200"
+                    >
+                      {trait}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    clickSound.play()
+                    resetGame()
+                  }}
+                  variant="outline"
+                  className="flex-1 bg-white hover:bg-gray-50 border-2 border-gray-300 rounded-xl font-bold py-3"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Play Again
+                </Button>
+                <Button
+                  onClick={() => {
+                    const handleDownload = () => {
+                      clickSound.play()
+                      downloadSound.play()
+                      
+                      if (cardRef.current) {
+                        // Create a temporary canvas
+                        const canvas = document.createElement('canvas')
+                        const ctx = canvas.getContext('2d')
+                        
+                        // Get the card dimensions
+                        const rect = cardRef.current.getBoundingClientRect()
+                        canvas.width = rect.width * 2 // Double the size for better quality
+                        canvas.height = rect.height * 2
+                        
+                        // Create a temporary div to hold the cloned content
+                        const tempDiv = document.createElement('div')
+                        tempDiv.innerHTML = cardRef.current.innerHTML
+                        
+                        // Create a temporary image
+                        const img = new Image()
+                        img.src = 'data:image/svg+xml;base64,' + btoa(tempDiv.innerHTML)
+                        
+                        // Wait for the image to load
+                        img.onload = () => {
+                          // Draw the image onto the canvas
+                          ctx?.drawImage(
+                            img,
+                            0,
+                            0,
+                            canvas.width,
+                            canvas.height
+                          )
+                          
+                          // Create a link to download the image
+                          const link = document.createElement('a')
+                          link.download = `gumball-quiz-result-${result.replace(/\s+/g, '-')}.png`
+                          link.href = canvas.toDataURL('image/png')
+                          link.click()
+                        }
+                      }
+                    }
+                    handleDownload()
+                  }}
+                  className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl py-3"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  return null
+}
