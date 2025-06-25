@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { RotateCcw, Download } from "lucide-react"
+import { downloadCardImage } from "@/components/ui/html2canvas"
 
 interface Question {
   id: number
@@ -132,14 +133,24 @@ export default function Component() {
   const [result, setResult] = useState<string>("")
   const cardRef = useRef<HTMLDivElement>(null)
 
-  // Initialize audio elements
-  const clickSound = new Audio('/sounds/button-click.mp3')
-  const downloadSound = new Audio('/sounds/download.mp3')
+  // Audio refs, initialized as null
+  const clickSound = useRef<HTMLAudioElement | null>(null)
+  const downloadSound = useRef<HTMLAudioElement | null>(null)
+  const backSound = useRef<HTMLAudioElement | null>(null)
+  const successSound = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    // Preload sounds
-    clickSound.preload = 'auto'
-    downloadSound.preload = 'auto'
+    // Only run on client
+    if (typeof window !== 'undefined') {
+      clickSound.current = new Audio('/sounds/button.wav')
+      clickSound.current.preload = 'auto'
+      downloadSound.current = new Audio('/sounds/download.wav')
+      downloadSound.current.preload = 'auto'
+      backSound.current = new Audio('/sounds/back.wav')
+      backSound.current.preload = 'auto'
+      successSound.current = new Audio('/sounds/success.wav')
+      successSound.current.preload = 'auto'
+    }
   }, [])
 
   const calculateResult = (userAnswers: string[]) => {
@@ -153,7 +164,7 @@ export default function Component() {
   }
 
   const handleAnswer = (character: string) => {
-    clickSound.play()
+    clickSound.current?.play()
     const newAnswers = [...answers, character]
     setAnswers(newAnswers)
 
@@ -192,7 +203,7 @@ export default function Component() {
               </p>
               <Button
                 onClick={() => {
-                  clickSound.play()
+                  downloadSound.current?.play()
                   setGameState("playing")
                 }}
                 className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
@@ -232,7 +243,7 @@ export default function Component() {
               <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight">{question.question}</h3>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 mb-4">
               {question.answers.map((answer, index) => (
                 <Button
                   key={index}
@@ -246,6 +257,19 @@ export default function Component() {
                   </div>
                 </Button>
               ))}
+            </div>
+            <div className="flex justify-between">
+              <Button
+                onClick={() => {
+                  backSound.current?.play()
+                  setCurrentQuestion((prev) => Math.max(prev - 1, 0))
+                }}
+                variant="outline"
+                className="px-6 py-2 font-bold"
+                disabled={currentQuestion === 0}
+              >
+                Back
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -286,7 +310,7 @@ export default function Component() {
               <div className="flex gap-3">
                 <Button
                   onClick={() => {
-                    clickSound.play()
+                    downloadSound.current?.play()
                     resetGame()
                   }}
                   variant="outline"
@@ -296,49 +320,15 @@ export default function Component() {
                   Play Again
                 </Button>
                 <Button
-                  onClick={() => {
-                    const handleDownload = () => {
-                      clickSound.play()
-                      downloadSound.play()
-                      
-                      if (cardRef.current) {
-                        // Create a temporary canvas
-                        const canvas = document.createElement('canvas')
-                        const ctx = canvas.getContext('2d')
-                        
-                        // Get the card dimensions
-                        const rect = cardRef.current.getBoundingClientRect()
-                        canvas.width = rect.width * 2 // Double the size for better quality
-                        canvas.height = rect.height * 2
-                        
-                        // Create a temporary div to hold the cloned content
-                        const tempDiv = document.createElement('div')
-                        tempDiv.innerHTML = cardRef.current.innerHTML
-                        
-                        // Create a temporary image
-                        const img = new Image()
-                        img.src = 'data:image/svg+xml;base64,' + btoa(tempDiv.innerHTML)
-                        
-                        // Wait for the image to load
-                        img.onload = () => {
-                          // Draw the image onto the canvas
-                          ctx?.drawImage(
-                            img,
-                            0,
-                            0,
-                            canvas.width,
-                            canvas.height
-                          )
-                          
-                          // Create a link to download the image
-                          const link = document.createElement('a')
-                          link.download = `gumball-quiz-result-${result.replace(/\s+/g, '-')}.png`
-                          link.href = canvas.toDataURL('image/png')
-                          link.click()
-                        }
-                      }
+                  onClick={async () => {
+                    clickSound.current?.play()
+                    successSound.current?.play()
+                    if (cardRef.current) {
+                      await downloadCardImage(
+                        cardRef.current,
+                        `gumball-quiz-result-${result.replace(/\s+/g, '-')}.png`
+                      )
                     }
-                    handleDownload()
                   }}
                   className="flex-1 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold rounded-xl py-3"
                 >
