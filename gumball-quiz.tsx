@@ -188,13 +188,13 @@ export default function Component() {
 
   if (gameState === "start") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden">
           <CardContent className="p-0">
             <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-center">
               <div className="text-6xl mb-4">🌟</div>
               <h1 className="text-3xl font-black text-white mb-2 drop-shadow-lg">Amazing World of</h1>
-              <h2 className="text-4xl font-black text-white mb-4 drop-shadow-lg">GUMBALL</h2>
+              <h2 className="gumball-title text-6xl font-black text-white mb-4 drop-shadow-lg font-gumball">GUMBALL</h2>
               <p className="text-xl font-bold text-white/90 drop-shadow">Character Quiz!</p>
             </div>
             <div className="p-8 bg-white">
@@ -221,7 +221,7 @@ export default function Component() {
     const question = questions[currentQuestion]
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md mx-auto shadow-2xl border-0">
           <CardContent className="p-6">
             <div className="mb-6">
@@ -281,7 +281,7 @@ export default function Component() {
     const character = characters[result]
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 flex items-center justify-center p-4">
+      <div className="min-h-screen flex items-center justify-center p-4">
         <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden" ref={cardRef}>
           <CardContent className="p-0">
             <div className={`${character.color} p-8 text-center text-white`}>

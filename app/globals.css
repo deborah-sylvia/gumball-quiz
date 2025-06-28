@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Gumball';
+  src: url('/fonts/Gumball.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-gumball {
+  font-family: 'Gumball', Arial, Helvetica, sans-serif;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -91,4 +103,32 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.gumball-title {
+  /* Gradient fill - purple to black */
+  background: linear-gradient(180deg, #a21af1 0%, #e0aaff 80%, #999 90%);
+  /* -webkit-background-clip: text; */
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+
+  /* White stroke outline */
+  -webkit-text-stroke: 0.5px #fff;
+
+  /* Purple glow effect - more intense */
+  text-shadow:
+      /* 0 0 5px #fff; */
+      /* 0 0 10px #fff, */
+      /* 0 0 15px #fff; */
+      /* 0 0 20px #fff, */
+      /* 0 0 35px #fff, */
+      0 0 50px #fff;
+
+  /* Make it big and bold - closer to original */
+  font-size: 5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: center;
+
 }
