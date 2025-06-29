@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { RotateCcw, Download } from "lucide-react"
 import { downloadCardImage } from "@/components/ui/html2canvas"
+import LiquidGlass from 'liquid-glass-react'
 
 interface Question {
   id: number
@@ -23,6 +24,7 @@ interface Character {
   emoji: string
   color: string
   traits: string[]
+  image: string
 }
 
 const questions: Question[] = [
@@ -91,6 +93,7 @@ const characters: Record<string, Character> = {
     emoji: "🐱",
     color: "bg-gradient-to-br from-blue-400 to-cyan-500",
     traits: ["Creative", "Adventurous", "Optimistic", "Impulsive"],
+    image: "/characters/Gumball.png"
   },
   darwin: {
     name: "Darwin Watterson",
@@ -99,6 +102,7 @@ const characters: Record<string, Character> = {
     emoji: "🐠",
     color: "bg-gradient-to-br from-orange-400 to-red-500",
     traits: ["Loyal", "Kind", "Optimistic", "Supportive"],
+    image: "/characters/Darwin.png"
   },
   anais: {
     name: "Anais Watterson",
@@ -107,6 +111,7 @@ const characters: Record<string, Character> = {
     emoji: "🐰",
     color: "bg-gradient-to-br from-pink-400 to-purple-500",
     traits: ["Intelligent", "Mature", "Logical", "Responsible"],
+    image: "/characters/Anais.png"
   },
   nicole: {
     name: "Nicole Watterson",
@@ -115,6 +120,7 @@ const characters: Record<string, Character> = {
     emoji: "🐱",
     color: "bg-gradient-to-br from-blue-600 to-indigo-700",
     traits: ["Strong", "Determined", "Protective", "Hardworking"],
+    image: "/characters/Nicole.png"
   },
   richard: {
     name: "Richard Watterson",
@@ -123,6 +129,7 @@ const characters: Record<string, Character> = {
     emoji: "🐰",
     color: "bg-gradient-to-br from-yellow-400 to-orange-500",
     traits: ["Relaxed", "Fun-loving", "Cheerful", "Carefree"],
+    image: "/characters/Richard.png"
   },
 }
 
@@ -188,31 +195,47 @@ export default function Component() {
 
   if (gameState === "start") {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden">
-          <CardContent className="p-0">
-            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-center">
-              <div className="text-6xl mb-4">🌟</div>
-              <h1 className="text-3xl font-black text-white mb-2 drop-shadow-lg">Amazing World of</h1>
-              <h2 className="gumball-title text-6xl font-black text-white mb-4 drop-shadow-lg font-gumball">GUMBALL</h2>
-              <p className="text-xl font-bold text-white/90 drop-shadow">Character Quiz!</p>
-            </div>
-            <div className="p-8 bg-white">
-              <p className="text-lg text-gray-700 mb-6 text-center font-medium">
-                Discover which character from Elmore you're most like! 🏠
-              </p>
-              <Button
-                onClick={() => {
-                  downloadSound.current?.play()
-                  setGameState("playing")
-                }}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
-              >
-                Start Quiz! 🚀
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="fixed inset-0 w-full h-full">
+        {/* Full-page LiquidGlass background */}
+        <LiquidGlass
+          displacementScale={64}
+          blurAmount={0.1}
+          saturation={130}
+          aberrationIntensity={2}
+          elasticity={0.35}
+          cornerRadius={50}
+          padding="0"
+          style={{ width: '90vw', height: '80vh', position: 'absolute', inset: 0, zIndex: 0 }}
+        >
+          <div className="w-1/2 h-1/2" />
+        </LiquidGlass>
+        {/* Centered Card above glass */}
+        <div className="absolute inset-0 flex items-center justify-center z-10">
+          <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden rounded-2xl">
+            <CardContent className="p-0">
+              <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-center">
+                <div className="text-6xl mb-4">🌟</div>
+                <h1 className="text-3xl font-black text-white mb-2 drop-shadow-lg">Amazing World of</h1>
+                <h2 className="gumball-title text-6xl font-black text-white mb-4 drop-shadow-lg font-gumball">GUMBALL</h2>
+                <p className="text-xl font-bold text-white/90 drop-shadow">Character Quiz!</p>
+              </div>
+              <div className="p-8 bg-white">
+                <p className="text-lg text-gray-700 mb-6 text-center font-medium">
+                  Discover which character from Elmore you're most like! 🏠
+                </p>
+                <Button
+                  onClick={() => {
+                    downloadSound.current?.play()
+                    setGameState("playing")
+                  }}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+                >
+                  Start Quiz! 🚀
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -285,13 +308,17 @@ export default function Component() {
         <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden" ref={cardRef}>
           <CardContent className="p-0">
             <div className={`${character.color} p-8 text-center text-white`}>
-              <div className="text-8xl mb-4">{character.emoji}</div>
+              <img
+                src={character.image}
+                alt={character.name}
+                className="mx-auto mb-2 w-128 sm:h-64 h-32 object-contain drop-shadow-lg"
+              />
               <h2 className="text-2xl font-black mb-2 drop-shadow-lg">You are...</h2>
               <h1 className="text-3xl font-black mb-4 drop-shadow-lg">{character.name}!</h1>
             </div>
 
             <div className="p-8 bg-white">
-              <p className="text-gray-700 mb-6 leading-relaxed font-medium">{character.description}</p>
+              <p className="text-sm sm:text-base text-gray-700 mb-6 leading-relaxed font-medium">{character.description}</p>
 
               <div className="mb-6">
                 <h3 className="font-bold text-gray-800 mb-3">Your traits:</h3>
