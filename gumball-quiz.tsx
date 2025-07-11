@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { RotateCcw, Download } from "lucide-react"
+import { FaGithub } from 'react-icons/fa'
 import { downloadCardImage } from "@/components/ui/html2canvas"
 
 interface Question {
@@ -192,102 +193,95 @@ export default function Component() {
 
   const progress = ((currentQuestion + 1) / questions.length) * 100
 
+  let content = null;
   if (gameState === "start") {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden rounded-2xl">
-          <CardContent className="p-0">
-            <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-center">
-              <div className="text-6xl mb-4">🌟</div>
-              <h1 className="text-3xl font-black text-white mb-2 drop-shadow-lg">Amazing World of</h1>
-              <h2 className="gumball-title text-6xl font-black text-white mb-4 drop-shadow-lg font-gumball">GUMBALL</h2>
-              <p className="text-xl font-bold text-white/90 drop-shadow">Character Quiz!</p>
+    content = (
+      <Card className="w-full max-w-md shadow-2xl border-0 overflow-hidden rounded-2xl">
+        <CardContent className="p-0">
+          <div className="bg-gradient-to-br from-yellow-400 to-orange-500 p-8 text-center">
+            <div className="text-6xl mb-4">🌟</div>
+            <h1 className="text-3xl font-black text-white mb-2 drop-shadow-lg">Amazing World of</h1>
+            <h2 className="gumball-title text-6xl font-black text-white mb-4 drop-shadow-lg font-gumball">GUMBALL</h2>
+            <p className="text-xl font-bold text-white/90 drop-shadow">Character Quiz!</p>
+          </div>
+          <div className="p-8 bg-white">
+            <p className="text-lg text-gray-700 mb-6 text-center font-medium">
+              Discover which character from Elmore you're most like! 🏠
+            </p>
+            <Button
+              onClick={() => {
+                downloadSound.current?.play()
+                setGameState("playing")
+              }}
+              className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
+            >
+              Start Quiz! 🚀
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  } else if (gameState === "playing") {
+    const question = questions[currentQuestion];
+    content = (
+      <Card className="w-full max-w-md mx-auto shadow-2xl border-0">
+        <CardContent className="p-6">
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-bold text-gray-600">
+                Question {currentQuestion + 1} of {questions.length}
+              </span>
+              <span className="text-sm font-bold text-purple-600">{Math.round(progress)}%</span>
             </div>
-            <div className="p-8 bg-white">
-              <p className="text-lg text-gray-700 mb-6 text-center font-medium">
-                Discover which character from Elmore you're most like! 🏠
-              </p>
+            <Progress value={progress} className="h-3 bg-gray-200">
+              <div
+                className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-500 ease-out"
+                style={{ width: `${progress}%` }}
+              />
+            </Progress>
+          </div>
+
+          <div className="text-center mb-8">
+            <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight">{question.question}</h3>
+          </div>
+
+          <div className="space-y-3 mb-4">
+            {question.answers.map((answer, index) => (
               <Button
-                onClick={() => {
-                  downloadSound.current?.play()
-                  setGameState("playing")
-                }}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-bold py-4 text-lg rounded-full shadow-lg transform hover:scale-105 transition-all duration-200"
-              >
-                Start Quiz! 🚀
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (gameState === "playing") {
-    const question = questions[currentQuestion]
-
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
-        <Card className="w-full max-w-md mx-auto shadow-2xl border-0">
-          <CardContent className="p-6">
-            <div className="mb-6">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm font-bold text-gray-600">
-                  Question {currentQuestion + 1} of {questions.length}
-                </span>
-                <span className="text-sm font-bold text-purple-600">{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} className="h-3 bg-gray-200">
-                <div
-                  className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full transition-all duration-500 ease-out"
-                  style={{ width: `${progress}%` }}
-                />
-              </Progress>
-            </div>
-
-            <div className="text-center mb-8">
-              <h3 className="text-xl font-bold text-gray-800 mb-4 leading-tight">{question.question}</h3>
-            </div>
-
-            <div className="space-y-3 mb-4">
-              {question.answers.map((answer, index) => (
-                <Button
-                  key={index}
-                  onClick={() => handleAnswer(answer.character)}
-                  variant="outline"
-                  className="w-full p-4 text-left bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 border-2 border-gray-200 hover:border-purple-300 rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
-                >
-                  <div className="flex items-center space-x-3">
-                    <span className="text-2xl">{answer.emoji}</span>
-                    <span className="font-medium text-gray-700 flex-1">{answer.text}</span>
-                  </div>
-                </Button>
-              ))}
-            </div>
-            <div className="flex justify-between">
-              <Button
-                onClick={() => {
-                  backSound.current?.play()
-                  setCurrentQuestion((prev) => Math.max(prev - 1, 0))
-                }}
+                key={index}
+                onClick={() => handleAnswer(answer.character)}
                 variant="outline"
-                className="px-6 py-2 font-bold"
-                disabled={currentQuestion === 0}
+                className="w-full p-4 text-left bg-white hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 border-2 border-gray-200 hover:border-purple-300 rounded-xl transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
               >
-                Back
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{answer.emoji}</span>
+                  <span className="font-medium text-gray-700 flex-1">{answer.text}</span>
+                </div>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (gameState === "result") {
-    const character = characters[result]
-
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4">
+            ))}
+          </div>
+          <div className="flex justify-between">
+            <Button
+              onClick={() => {
+                backSound.current?.play()
+                setCurrentQuestion((prev) => Math.max(prev - 1, 0))
+              }}
+              variant="outline"
+              className="px-6 py-2 font-bold"
+              disabled={currentQuestion === 0}
+            >
+              Back
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  } else if (gameState === "result") {
+    const character = characters[result];
+    content = (
+      <>
+        {/* Dedicated download card (hidden) */}
+        {/* <DownloadCard /> */}
         <Card className="w-full max-w-md mx-auto shadow-2xl border-0 overflow-hidden" ref={cardRef}>
           <CardContent className="p-0">
             <div className={`${character.color} p-8 text-center text-white`}>
@@ -349,9 +343,24 @@ export default function Component() {
             </div>
           </CardContent>
         </Card>
-      </div>
+      </>
     )
   }
 
-  return null
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      {content}
+      <div className="mt-6 flex items-center justify-center text-gray-400 text-sm gap-2">
+        <FaGithub className="inline-block mr-1" size={18} />
+        <a
+          href="https://github.com/deborah-sylvia"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="sliding-underline"
+        >
+          @deborah-sylvia
+        </a>
+      </div>
+    </div>
+  );
 }
