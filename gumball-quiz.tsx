@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { RotateCcw, Download } from "lucide-react"
 import { FaGithub } from 'react-icons/fa'
+import { FiMessageSquare } from 'react-icons/fi'
 import { downloadCardImage } from "@/components/ui/html2canvas"
 
 interface Question {
@@ -361,6 +362,31 @@ export default function Component() {
           @deborah-sylvia
         </a>
       </div>
+      {/* Floating Feedback Button */}
+      <a
+        href="https://tally.so/r/nGE4e2"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Send Feedback"
+        className="fixed z-50 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-lg flex items-center justify-center p-4 sm:bottom-6 sm:right-6 bottom-6 right-6 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        style={{
+          top: 'auto',
+          right: '1.5rem',
+          bottom: '1.5rem',
+          left: 'auto',
+        }}
+      >
+        <FiMessageSquare size={24} />
+        {/* <span className="ml-2 font-bold hidden sm:inline">Feedback</span> */}
+      </a>
+      <style>{`
+        @media (max-width: 640px) {
+          a[aria-label='Send Feedback'] {
+            top: 1.5rem !important;
+            bottom: auto !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
